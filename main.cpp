@@ -12,7 +12,7 @@ void hladane_slova(int mlines, int ncolumns, FILE *fr, char slova[], char **arra
 }
 
 
-void pocet_znak(char **array,int mlines,int ncolumns,char *index[]) {
+void pocet_znak(char **array,int mlines,int ncolumns,int *index[]) {
     int novePole[26],pocet[26],x=65;
     //nastavenie pismen od A po Z
     for (int i = 0; i < 26; ++i) {
@@ -23,20 +23,14 @@ void pocet_znak(char **array,int mlines,int ncolumns,char *index[]) {
     for ( int i = 0; i < mlines; i++) {
         for ( int j = 0; j < ncolumns; j++) {
             for ( int k = 0; k < AZ; k++) {
-                if (array[i][j]==index[k][0]&&novePole[k]>pocet[k]){
-                    if(pocet[k]==-1)
-                        pocet[k]=0;
-                    pocet[k]+=2;
-                    index[k][pocet[k]-1]=i;
-                    index[k][pocet[k]]=j;
-                    break;
-                }
-                else if(array[i][j]==index[k][0]&&novePole[k]==pocet[k]){
-                    index[k]=(char*)realloc(index[k], (pocet[k] + N) * sizeof(char));//strasny sef keby to funguje
-                    novePole[k]+=N;
-                    pocet[k]+=2;
-                    index[k][pocet[k]-1]=i;
-                    index[k][pocet[k]]=j;
+                if (array[i][j]==index[k][0]){
+                    if(novePole[k] - pocet[k] <2) {
+                        index[k] = (int *) realloc(index[k], (pocet[k] + (N * 2)) * sizeof(int));
+                        novePole[k] += (N*2);
+                    }
+                    index[k][pocet[k]] = i;
+                    index[k][pocet[k]+1] = j;
+                    pocet[k] +=2;
                     break;
                 }
             }
@@ -90,11 +84,11 @@ int main(){
     }
 
     //vytvorenie pola na pamatanie vyskytu a zapisanie pismen donho
-    char *abeceda[AZ];
+    int *abeceda[AZ];
     char temp = 'A';
 
     for(int i=0; i < 26; i++){
-        abeceda[i] = (char*) calloc (N, sizeof(char)); //malloc mi spravi 2d pole
+        abeceda[i] = (int*) calloc (N, sizeof(int)); //malloc mi spravi 2d pole
         abeceda[i][0] = temp++; //na i index zapis hodnoty od A po Z, index j ostane prazdny, tam si neskor zapisem suradnice kde sa to pismenko nachadza
         abeceda[0][i] = -1;
     }
@@ -108,7 +102,7 @@ int main(){
     hladane_slova(mlines, ncolumns, fr, slova_na_skrtanie, array);
 
     freearray(array, mlines);
-    freearray(abeceda, mlines);
+
 
     if(fclose(fr) == EOF){
         printf("Subor sa nepodarilo zatvorit");
